@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServerClient()
 
-    const { data: existing } = await supabase
-      .from('users')
-      .select('api_key')
-      .eq('id', user.id)
-      .maybeSingle()
+    // Check for existing api_key and clear old accounts in parallel
+    const [{ data: existing }] = await Promise.all([
+      supabase.from('users').select('api_key').eq('id', user.id).maybeSingle(),
+      supabase.from('accounts').delete().eq('user_id', user.id),
+    ])
 
     const apiKey = existing?.api_key ?? crypto.randomUUID()
 
@@ -23,24 +23,17 @@ export async function POST(req: NextRequest) {
       .from('users')
       .upsert({ ...user, api_key: apiKey }, { onConflict: 'id' })
 
-    if (userError) {
-      return NextResponse.json({ error: userError.message }, { status: 500 })
-    }
+    if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
 
     if (accounts?.length) {
-      await supabase.from('accounts').delete().eq('user_id', user.id)
-
       const rows = accounts.map((a: { display_name: string; keywords: string; is_internal: boolean }) => ({
         user_id: user.id,
         display_name: a.display_name,
         keywords: a.keywords,
         is_internal: a.is_internal ?? false,
       }))
-
       const { error: accountsError } = await supabase.from('accounts').insert(rows)
-      if (accountsError) {
-        return NextResponse.json({ error: accountsError.message }, { status: 500 })
-      }
+      if (accountsError) return NextResponse.json({ error: accountsError.message }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true, api_key: apiKey })

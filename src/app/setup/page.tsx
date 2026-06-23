@@ -11,6 +11,7 @@ const JON_ACCOUNTS: Omit<Account, 'user_id'>[] = [
   { display_name: 'US Navy Recruiting', keywords: 'usn recruiting, navy recruiting, nrc', is_internal: false },
   { display_name: 'US Navy Personnel (BUPERS)', keywords: 'bupers, navy personnel, millington', is_internal: false },
   { display_name: 'State of Oregon', keywords: 'oregon, state of oregon', is_internal: true },
+  { display_name: 'DCSS', keywords: 'dcss, california child support, department of child support, child support services', is_internal: false },
 ]
 
 export default function Setup() {
@@ -31,7 +32,7 @@ export default function Setup() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userId.trim() || !name.trim() || !slackId.trim()) {
-      setError('All fields are required.')
+      setError('All fields marked * are required.')
       return
     }
 
@@ -64,6 +65,14 @@ export default function Setup() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-16 px-6">
+      {saving && (
+        <div className="fixed inset-0 bg-gray-50 flex flex-col items-center justify-center z-50">
+          <div className="animate-spin h-8 w-8 border-2 border-gray-900 border-t-transparent rounded-full mb-4" />
+          <p className="text-sm font-medium text-gray-900">Setting up your profile…</p>
+          <p className="text-xs text-gray-400 mt-1">This takes a few seconds on first load</p>
+        </div>
+      )}
+
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Set up your profile</h1>
@@ -74,7 +83,7 @@ export default function Setup() {
           <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                Your Handle
+                Your Handle <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -91,7 +100,7 @@ export default function Setup() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -103,7 +112,7 @@ export default function Setup() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                  Slack User ID
+                  Slack User ID <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -141,7 +150,7 @@ export default function Setup() {
             disabled={saving}
             className="w-full bg-gray-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            {saving ? 'Saving…' : 'Save and open dashboard'}
+            Save and open dashboard
           </button>
         </form>
       </div>
