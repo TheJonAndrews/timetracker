@@ -11,9 +11,17 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServerClient()
 
+    const { data: existing } = await supabase
+      .from('users')
+      .select('api_key')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const apiKey = existing?.api_key ?? crypto.randomUUID()
+
     const { error: userError } = await supabase
       .from('users')
-      .upsert(user, { onConflict: 'id' })
+      .upsert({ ...user, api_key: apiKey }, { onConflict: 'id' })
 
     if (userError) {
       return NextResponse.json({ error: userError.message }, { status: 500 })
@@ -35,7 +43,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, api_key: apiKey })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })

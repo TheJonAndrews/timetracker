@@ -16,10 +16,13 @@ export default function Profile() {
 
   useEffect(() => {
     const id = localStorage.getItem('tt_user_id')
-    if (!id) { router.push('/setup'); return }
+    const apiKey = localStorage.getItem('tt_api_key')
+    if (!id || !apiKey) { router.push('/setup'); return }
     setUserId(id)
 
-    fetch(`/api/profile?user_id=${encodeURIComponent(id)}`)
+    fetch(`/api/profile?user_id=${encodeURIComponent(id)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
       .then(r => r.json())
       .then(data => {
         setAccounts(data.accounts ?? [])
@@ -34,9 +37,10 @@ export default function Profile() {
     setError('')
     setSaved(false)
 
+    const apiKey = localStorage.getItem('tt_api_key') ?? ''
     const res = await fetch(`/api/profile?user_id=${encodeURIComponent(userId)}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ accounts }),
     })
 

@@ -51,14 +51,14 @@ export default function Setup() {
       }),
     })
 
+    const data = await res.json()
     if (!res.ok) {
-      const data = await res.json()
       setError(data.error ?? 'Something went wrong.')
       setSaving(false)
       return
     }
-
     localStorage.setItem('tt_user_id', userId.trim().toLowerCase())
+    localStorage.setItem('tt_api_key', data.api_key)
     router.push('/')
   }
 

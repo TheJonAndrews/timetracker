@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+import { verifyApiKey } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('user_id')
   if (!userId) {
     return NextResponse.json({ error: 'Missing user_id' }, { status: 400 })
+  }
+
+  if (!(await verifyApiKey(userId, req.headers.get('authorization')))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {

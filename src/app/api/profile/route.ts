@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+import { verifyApiKey } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('user_id')
   if (!userId) return NextResponse.json({ error: 'Missing user_id' }, { status: 400 })
 
+  if (!(await verifyApiKey(userId, req.headers.get('authorization')))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const supabase = createServerClient()
 
     const [{ data: user, error: userErr }, { data: accounts, error: accErr }] = await Promise.all([
-      supabase.from('users').select('*').eq('id', userId).single(),
+      supabase.from('users').select('id, name, slack_user_id, created_at').eq('id', userId).single(),
       supabase.from('accounts').select('*').eq('user_id', userId).order('id'),
     ])
 
@@ -26,6 +31,10 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get('user_id')
   if (!userId) return NextResponse.json({ error: 'Missing user_id' }, { status: 400 })
+
+  if (!(await verifyApiKey(userId, req.headers.get('authorization')))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { accounts } = await req.json()

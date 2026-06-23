@@ -23,13 +23,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     const id = localStorage.getItem('tt_user_id')
-    if (!id) {
+    const apiKey = localStorage.getItem('tt_api_key')
+    if (!id || !apiKey) {
       router.push('/setup')
       return
     }
     setUserId(id)
 
-    fetch(`/api/reports?user_id=${encodeURIComponent(id)}`)
+    fetch(`/api/reports?user_id=${encodeURIComponent(id)}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
       .then(r => r.json())
       .then(data => {
         setReports(Array.isArray(data) ? data : [])
