@@ -43,7 +43,7 @@ export default function AccountsTable({ accounts, onChange }: Props) {
                     value={account.display_name}
                     onChange={e => update(i, 'display_name', e.target.value)}
                     placeholder="WMATA"
-                    className="w-full text-sm border-0 outline-none bg-transparent placeholder-gray-300"
+                    className="w-full text-sm text-gray-900 border-0 outline-none bg-transparent placeholder-gray-300"
                   />
                 </td>
                 <td className="px-3 py-2">
@@ -52,7 +52,7 @@ export default function AccountsTable({ accounts, onChange }: Props) {
                     value={account.keywords}
                     onChange={e => update(i, 'keywords', e.target.value)}
                     placeholder="wmata, washington metropolitan"
-                    className="w-full text-sm border-0 outline-none bg-transparent placeholder-gray-300 font-mono"
+                    className="w-full text-sm text-gray-900 border-0 outline-none bg-transparent placeholder-gray-300 font-mono"
                   />
                 </td>
                 <td className="px-3 py-2 text-center">

@@ -74,7 +74,7 @@ export default function Setup() {
           <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
-                Unique Identifier
+                Your Handle
               </label>
               <input
                 type="text"
@@ -82,10 +82,10 @@ export default function Setup() {
                 onChange={e => setUserId(e.target.value)}
                 onBlur={handleIdBlur}
                 placeholder="e.g. joandrews"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 font-mono"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400 font-mono"
                 autoFocus
               />
-              <p className="text-xs text-gray-400 mt-1">Lowercase, no spaces. Used to identify your reports.</p>
+              <p className="text-xs text-gray-400 mt-1">Use the prefix of your Adobe email — e.g. if your email is joandrews@adobe.com, enter <span className="font-mono">joandrews</span>. This links your reports to your profile.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -98,7 +98,7 @@ export default function Setup() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Jon Andrews"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400"
                 />
               </div>
               <div>
@@ -110,7 +110,7 @@ export default function Setup() {
                   value={slackId}
                   onChange={e => setSlackId(e.target.value)}
                   placeholder="U09NSR59A92"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 font-mono"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400 font-mono"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Find it in Slack: click your name → View full profile → ⋯ → Copy member ID
