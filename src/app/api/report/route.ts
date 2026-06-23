@@ -16,19 +16,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const supabase = createServerClient()
+  try {
+    const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('reports')
-    .upsert(
-      { user_id, report_date, total_hours, structured_data, raw_text },
-      { onConflict: 'user_id,report_date' }
-    )
+    const { error } = await supabase
+      .from('reports')
+      .upsert(
+        { user_id, report_date, total_hours, structured_data, raw_text },
+        { onConflict: 'user_id,report_date' }
+      )
 
-  if (error) {
-    console.error('Supabase upsert error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      console.error('Supabase upsert error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
-
-  return NextResponse.json({ ok: true })
 }
