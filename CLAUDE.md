@@ -33,21 +33,29 @@ Cloud Routine (4 PM ET) → POST /api/report (Bearer token auth)
                         Next.js frontend (Vercel)
 ```
 
-**Multi-user:** `user_id` is a handle (e.g. `joandrews`), stored in `localStorage` as `tt_user_id`. Each user also has a per-user `api_key` (UUID) stored in `localStorage` as `tt_api_key` and in the `users` table. All dashboard API routes require `Authorization: Bearer [api_key]`.
+**Two auth models — don't confuse them:**
+- **`REPORT_API_SECRET`** — a single shared secret used only by the cloud routine to POST to `/api/report`. Set as an env var on Vercel; hardcoded in the routine prompt.
+- **Per-user `api_key`** — a UUID generated at setup, stored in `localStorage` as `tt_api_key` and in the `users` table. Used by all other protected routes (`/api/reports`, `/api/profile`). Verified by `verifyApiKey()` in `src/lib/auth.ts`.
+
+`user_id` is a handle (e.g. `joandrews`), stored in `localStorage` as `tt_user_id`.
 
 ## Key Files
 
-- `src/lib/supabase-server.ts` — Throws if env vars missing. All API routes wrap calls in try/catch to prevent 500s from propagating as blank responses.
-- `src/lib/auth.ts` — `verifyApiKey(userId, authHeader)` helper used by protected routes.
-- `src/app/api/report/route.ts` — Protected by `REPORT_API_SECRET` bearer token. Used exclusively by the cloud routine.
-- `src/app/api/reports/route.ts` — Requires per-user `api_key` Bearer token.
-- `src/app/api/profile/route.ts` — GET and PUT both require per-user `api_key` Bearer token.
-- `src/app/setup/page.tsx` — Onboarding. Pre-seeds 6 accounts when handle is `joandrews`. Returns `api_key` from server and stores it in localStorage.
-- `src/app/page.tsx` — Dashboard. Redirects to `/setup` if `tt_user_id` or `tt_api_key` missing from localStorage.
+- `src/lib/auth.ts` — `verifyApiKey(userId, authHeader)` — looks up `api_key` in the `users` table and compares.
+- `src/app/api/report/route.ts` — Cloud routine writes here. Auth via `REPORT_API_SECRET`. Upserts on `(user_id, report_date)`.
+- `src/app/api/reports/route.ts` — Dashboard reads here. Returns last 7 reports ordered by date desc.
+- `src/app/api/profile/route.ts` — GET/PUT for user profile and accounts list. PUT replaces all accounts (delete + insert, not patch).
+- `src/app/api/setup/route.ts` — Creates or re-initializes a user. Preserves existing `api_key` on re-setup. Clears and re-inserts accounts.
+- `src/app/setup/page.tsx` — Pre-seeds 7 accounts when handle is `joandrews`. Stores `api_key` returned from server into localStorage.
+- `src/app/page.tsx` — Dashboard, redirects to `/setup` if localStorage keys are missing.
+- `src/components/DayCard.tsx` — Collapsible card for one day's report. Renders `structured_data.accounts` and `needs_input`; shows `raw_text` in a collapsible `<details>`.
 
 ## Supabase Schema
 
-Three tables: `users`, `accounts` (keywords-based account matching, comma-separated), `reports` (jsonb `structured_data` + `raw_text`). Unique constraint on `(user_id, report_date)` in `reports` — POST endpoint uses upsert.
+Three tables:
+- `users` — `id` (handle), `name`, `slack_user_id`, `api_key`
+- `accounts` — per-user keyword list for account matching; `keywords` is a comma-separated string; `is_internal: true` marks Adobe-internal accounts. **Note:** the `accounts` table is used by the frontend for display and profile editing only — the cloud routine embeds its own keyword list in the prompt and does not read from this table.
+- `reports` — `user_id`, `report_date`, `total_hours`, `raw_text`, `structured_data` (jsonb). Unique on `(user_id, report_date)`.
 
 ## Tailwind v4 Gotcha
 
