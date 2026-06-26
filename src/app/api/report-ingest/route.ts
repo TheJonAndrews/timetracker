@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const decoded = Buffer.from(payload, 'base64').toString('utf-8')
+    const decoded = Buffer.from(payload, 'base64url').toString('utf-8')
     body = JSON.parse(decoded)
   } catch {
     return NextResponse.json({ error: 'Invalid payload encoding' }, { status: 400 })
